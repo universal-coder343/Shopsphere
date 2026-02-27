@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHOPSPHERE — Modern Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo" onclick="scrollTo(0,0)">SHOPSPHERE</div>
+    <ul class="nav-links">
+      <li><a href="#categories" class="active">Categories</a></li>
+      <li><a href="#featured">Featured</a></li>
+      <li><a href="#deals">Deals</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="search-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" placeholder="Search products..." id="searchInput" oninput="filterProducts()">
+      </div>
+      <button class="cart-btn" onclick="toggleCart()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        Cart <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tag">✦ New Season Collection</div>
+      <h1>SHOP THE<br><span>FUTURE</span><br>TODAY</h1>
+      <p>Discover thousands of products across electronics, fashion, home & more — curated for those who refuse ordinary.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="document.getElementById('featured').scrollIntoView({behavior:'smooth'})">Shop Now →</button>
+        <button class="btn-outline" onclick="document.getElementById('categories').scrollIntoView({behavior:'smooth'})">Browse Categories</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-visual-inner">
+        <div class="hero-glow"></div>
+      </div>
+      <div class="hero-product-showcase">
+        <div class="showcase-card" onclick="filterByCategory('electronics')">
+          <div class="emoji">🎧</div>
+          <div class="sc-name">Pro Audio</div>
+          <div class="sc-price">From ₹4,099</div>
+        </div>
+        <div class="showcase-card" onclick="filterByCategory('clothes')">
+          <div class="emoji">👗</div>
+          <div class="sc-name">Fashion</div>
+          <div class="sc-price">From ₹2,449</div>
+        </div>
+        <div class="showcase-card" onclick="filterByCategory('home')">
+          <div class="emoji">🛋️</div>
+          <div class="sc-name">Home</div>
+          <div class="sc-price">From ₹6,599</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="categories">
+    <div class="section-header">
+      <div class="section-title">BROWSE <span>CATEGORIES</span></div>
+    </div>
+    <div class="categories-grid" id="categoryGrid">
+      <div class="cat-card active" onclick="filterByCategory('all')">
+        <div class="cat-icon">🌐</div>
+        <div class="cat-name">All</div>
+        <div class="cat-count">120+ items</div>
+      </div>
+      <div class="cat-card" onclick="filterByCategory('electronics')">
+        <div class="cat-icon">📱</div>
+        <div class="cat-name">Electronics</div>
+        <div class="cat-count">45 items</div>
+      </div>
+      <div class="cat-card" onclick="filterByCategory('clothes')">
+        <div class="cat-icon">👕</div>
+        <div class="cat-name">Clothes</div>
+        <div class="cat-count">38 items</div>
+      </div>
+      <div class="cat-card" onclick="filterByCategory('home')">
+        <div class="cat-icon">🏠</div>
+        <div class="cat-name">Home Appliances</div>
+        <div class="cat-count">22 items</div>
+      </div>
+      <div class="cat-card" onclick="filterByCategory('beauty')">
+        <div class="cat-icon">💄</div>
+        <div class="cat-name">Beauty</div>
+        <div class="cat-count">18 items</div>
+      </div>
+      <div class="cat-card" onclick="filterByCategory('sports')">
+        <div class="cat-icon">⚽</div>
+        <div class="cat-name">Sports</div>
+        <div class="cat-count">15 items</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="promo-banner" id="deals">
+    <div class="promo-content">
+      <div class="promo-tag">⚡ Flash Sale</div>
+      <div class="promo-title">UP TO 50%<br>OFF TODAY</div>
+      <div class="promo-sub">Limited time offers on selected items</div>
+    </div>
+    <div class="promo-timer">
+      <div class="timer-block">
+        <div class="timer-num" id="t-h">08</div>
+        <div class="timer-label">Hours</div>
+      </div>
+      <div class="timer-block">
+        <div class="timer-num" id="t-m">24</div>
+        <div class="timer-label">Mins</div>
+      </div>
+      <div class="timer-block">
+        <div class="timer-num" id="t-s">00</div>
+        <div class="timer-label">Secs</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="featured">
+    <div class="section-header">
+      <div class="section-title">FEATURED <span>PRODUCTS</span></div>
+    </div>
+    <div class="filter-row" id="filterRow">
+      <button class="filter-tab active" onclick="sortProducts('all', this)">All</button>
+      <button class="filter-tab" onclick="sortProducts('price-asc', this)">Price: Low → High</button>
+      <button class="filter-tab" onclick="sortProducts('price-desc', this)">Price: High → Low</button>
+      <button class="filter-tab" onclick="sortProducts('rating', this)">Top Rated</button>
+      <button class="filter-tab" onclick="sortProducts('sale', this)">On Sale</button>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+  </section>
+
+  <footer id="about">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">SHOPSPHERE</div>
+        <p>The modern marketplace for everything you need. Quality products, fast delivery, and an experience built for the future.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#">New Arrivals</a></li>
+          <li><a href="#">Best Sellers</a></li>
+          <li><a href="#">Sale</a></li>
+          <li><a href="#">Gift Cards</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Track Order</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 SHOPSPHERE. All rights reserved.</span>
+      <span>Privacy · Terms · Cookies</span>
+    </div>
+  </footer>
+
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h2>YOUR CART</h2>
+      <button class="close-cart" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-total">
+        <span>Total</span>
+        <span class="cart-total-price" id="cartTotal">₹0</span>
+      </div>
+      <button class="checkout-btn">Proceed to Checkout →</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <span>✓</span>
+    <span id="toastMsg">Added to cart!</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
