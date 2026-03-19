@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHOPSPHERE — Admin Panel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-nav {
+            background: var(--surface);
+            padding: 20px 5%;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-container {
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-table-container {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-delete {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Admin Modal Form */
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-body .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="admin-nav">
+        <div class="nav-logo"><a href="index.html" style="color:inherit; text-decoration:none;">SHOPSPHERE <span
+                    style="font-size: 16px; color: var(--primary);">/ ADMIN</span></a></div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="adminName" style="font-weight: 500;"></span>
+            <button class="btn-outline" onclick="handleLogout()" style="padding: 6px 16px; font-size: 14px;">Log
+                Out</button>
+        </div>
+    </nav>
+
+    <div class="admin-container" id="adminContent" style="display: none;">
+        <div class="admin-header">
+            <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 40px; margin: 0;">Manage Products</h1>
+            <button class="btn-primary" onclick="openProductModal()">+ Add Product</button>
+        </div>
+
+        <div class="admin-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Badge</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading products...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="cart-overlay" id="productOverlay" onclick="closeProductModal()"></div>
+    <div class="auth-modal" id="productModal" style="max-width: 600px;">
+        <div class="auth-header">
+            <h2 id="modalTitle">Add Product</h2>
+            <button class="close-cart" onclick="closeProductModal()">✕</button>
+        </div>
+        <form id="productForm" onsubmit="handleProductSubmit(event)">
+            <input type="hidden" id="productId">
+
+            <div class="modal-body">
+                <div class="full-width">
+                    <label>Name</label>
+                    <input type="text" id="p_name" required
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label>Category</label>
+                    <select id="p_cat" required
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background:var(--background); color:var(--text);">
+                        <option value="electronics">Electronics</option>
+                        <option value="clothes">Clothes</option>
+                        <option value="home">Home</option>
+                        <option value="beauty">Beauty</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Emoji Icon</label>
+                    <input type="text" id="p_emoji" required
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label>Price (₹)</label>
+                    <input type="number" id="p_price" required
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label>Old Price (₹) - Optional</label>
+                    <input type="number" id="p_oldPrice"
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label>Badge - Optional</label>
+                    <select id="p_badge"
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background:var(--background); color:var(--text);">
+                        <option value="">None</option>
+                        <option value="Sale">Sale</option>
+                        <option value="New">New</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Rating (1-5)</label>
+                    <input type="number" id="p_rating" step="0.1" max="5" min="1" value="5"
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 20px;" id="submitBtn">Save
+                Product</button>
+        </form>
+    </div>
+
+    <!-- Centered Loader -->
+    <div id="loader" style="text-align: center; margin-top: 100px; font-size: 20px;">Checking Permissions...</div>
+
+    <script src="api.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

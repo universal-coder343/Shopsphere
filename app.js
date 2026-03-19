@@ -1,23 +1,6 @@
-const products = [
-  { id: 1,  name: 'Wireless Headphones Pro',  cat: 'electronics', price: 12499, oldPrice: 16599, rating: 4.8, reviews: 234, emoji: '🎧', badge: 'Sale' },
-  { id: 2,  name: 'iPhone 15 Pro Case',        cat: 'electronics', price: 2449,  oldPrice: null,  rating: 4.5, reviews: 89,  emoji: '📱', badge: 'New' },
-  { id: 3,  name: '4K Smart TV 55"',           cat: 'electronics', price: 58299, oldPrice: 74999, rating: 4.7, reviews: 156, emoji: '📺', badge: 'Sale' },
-  { id: 4,  name: 'Mechanical Keyboard',       cat: 'electronics', price: 9899,  oldPrice: 12499, rating: 4.9, reviews: 312, emoji: '⌨️', badge: 'Sale' },
-  { id: 5,  name: 'Premium Sneakers',          cat: 'clothes',     price: 10799, oldPrice: null,  rating: 4.6, reviews: 201, emoji: '👟', badge: 'New' },
-  { id: 6,  name: 'Winter Hoodie',             cat: 'clothes',     price: 4949,  oldPrice: 6599,  rating: 4.4, reviews: 145, emoji: '🧥', badge: 'Sale' },
-  { id: 7,  name: 'Linen Summer Dress',        cat: 'clothes',     price: 7449,  oldPrice: null,  rating: 4.7, reviews: 98,  emoji: '👗', badge: 'New' },
-  { id: 8,  name: 'Slim Fit Jeans',            cat: 'clothes',     price: 6599,  oldPrice: 8299,  rating: 4.5, reviews: 267, emoji: '👖', badge: 'Sale' },
-  { id: 9,  name: 'Air Fryer XL',              cat: 'home',        price: 7449,  oldPrice: 9999,  rating: 4.8, reviews: 445, emoji: '🫕', badge: 'Sale' },
-  { id: 10, name: 'Robot Vacuum',              cat: 'home',        price: 24999, oldPrice: 33299, rating: 4.6, reviews: 332, emoji: '🤖', badge: 'Sale' },
-  { id: 11, name: 'Coffee Machine',            cat: 'home',        price: 14999, oldPrice: null,  rating: 4.9, reviews: 189, emoji: '☕', badge: 'New' },
-  { id: 12, name: 'Blender Pro 2000',          cat: 'home',        price: 5799,  oldPrice: 7449,  rating: 4.4, reviews: 122, emoji: '🌀', badge: 'Sale' },
-  { id: 13, name: 'Vitamin C Serum',           cat: 'beauty',      price: 3299,  oldPrice: null,  rating: 4.7, reviews: 567, emoji: '💆', badge: 'New' },
-  { id: 14, name: 'Perfume Luxe',              cat: 'beauty',      price: 8299,  oldPrice: 10799, rating: 4.8, reviews: 213, emoji: '🌸', badge: 'Sale' },
-  { id: 15, name: 'Yoga Mat Pro',              cat: 'sports',      price: 4099,  oldPrice: null,  rating: 4.6, reviews: 178, emoji: '🧘', badge: 'New' },
-  { id: 16, name: 'Smart Fitness Watch',       cat: 'sports',      price: 16599, oldPrice: 20799, rating: 4.7, reviews: 389, emoji: '⌚', badge: 'Sale' },
-];
-
-let cart            = [];
+// We start with empty arrays until fetched from the API
+let products = [];
+let cart     = [];
 let currentCategory = 'all';
 let currentSearch   = '';
 let currentSort     = 'all';
@@ -121,15 +104,15 @@ function renderCart() {
 
   container.innerHTML = cart.map(item => `
     <div class="cart-item">
-      <div class="cart-item-icon">${item.emoji}</div>
+      <div class="cart-item-icon">${item.emoji || '📦'}</div>
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
         <div class="cart-item-price">${formatPrice(item.price * item.qty)}</div>
       </div>
       <div class="cart-item-qty">
-        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+        <button class="qty-btn" onclick="changeQty(${item.cart_item_id}, -1, ${item.product_id})">−</button>
         <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+        <button class="qty-btn" onclick="changeQty(${item.cart_item_id}, 1, ${item.product_id})">+</button>
       </div>
     </div>
   `).join('');
@@ -138,46 +121,124 @@ function renderCart() {
   document.getElementById('cartTotal').textContent = formatPrice(total);
 }
 
-function addToCart(id) {
-  const product  = products.find(p => p.id === id);
-  const existing = cart.find(c => c.id === id);
+// --- AUTH LOGIC ---
+// --- AUTH LOGIC (Simplified, moved to auth.html) ---
 
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({ ...product, qty: 1 });
-  }
+function updateAuthUI(user) {
+    const authActions = document.getElementById('authActions');
+    const userProfile = document.getElementById('userProfile');
+    const nameDisplay = document.getElementById('userNameDisplay');
+    const adminLink = document.getElementById('adminLink');
 
-  updateCart();
-
-  const btn = document.getElementById(`btn-${id}`);
-  btn.classList.add('added');
-  btn.textContent = '✓';
-  setTimeout(() => {
-    btn.classList.remove('added');
-    btn.textContent = '+';
-  }, 1200);
-
-  showToast(`${product.name} added to cart!`);
+    if (user) {
+        if (authActions) authActions.style.display = 'none';
+        if (userProfile) userProfile.style.display = 'flex';
+        if (nameDisplay) nameDisplay.innerText = user.name;
+        if (adminLink) adminLink.style.display = user.role === 'admin' ? 'block' : 'none';
+    } else {
+        if (authActions) authActions.style.display = 'flex';
+        if (userProfile) userProfile.style.display = 'none';
+    }
 }
 
-function changeQty(id, delta) {
-  const item = cart.find(c => c.id === id);
+async function handleLogout() {
+    await window.logoutUser(); // This triggers window reload via api.js
+}
+
+async function addToCart(id) {
+  const user = getCurrentUser();
+  if (!user) {
+      window.location.replace('auth.html');
+      return;
+  }
+
+  const product  = products.find(p => p.id === id);
+  
+  try {
+    console.log("Adding to cart API:", id);
+    // Await API call
+    await window.addToCart(id, 1);
+
+    // Optimistically update frontend state
+    const existing = cart.find(c => c.product_id === id || c.id === id);
+    if (existing) {
+      existing.qty++;
+    } else {
+      cart.push({ ...product, product_id: id, cart_item_id: Date.now(), qty: 1 });
+    }
+    
+    console.log("Cart after optimistic update:", JSON.parse(JSON.stringify(cart)));
+
+    updateCartUI();
+
+    const btn = document.getElementById(`btn-${id}`);
+    btn.classList.add('added');
+    btn.textContent = '✓';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.textContent = '+';
+    }, 1200);
+
+    showToast(`${product.name} added to cart!`);
+
+    // Fetch the true latest cart from server
+    await syncCart();
+
+  } catch(err) {
+      alert("Error adding to cart: " + err.message);
+  }
+}
+
+async function changeQty(cartItemId, delta, productId) {
+  const item = cart.find(c => c.cart_item_id === cartItemId || c.product_id === productId);
   if (!item) return;
 
-  item.qty += delta;
-  if (item.qty <= 0) {
-    cart = cart.filter(c => c.id !== id);
+  const newQty = item.qty + delta;
+  try {
+      if (newQty <= 0) {
+        await window.removeFromCart(item.cart_item_id);
+      } else {
+        await window.updateCartItem(item.cart_item_id, newQty);
+      }
+      await syncCart();
+    } catch(err) {
+      alert("Failed to update cart: " + err.message);
   }
-
-  updateCart();
 }
 
-function updateCart() {
+async function handleCheckout() {
+  if (cart.length === 0) return alert("Cart is empty");
+  
+  try {
+     const res = await window.placeOrder();
+     cart = [];
+     updateCartUI();
+     toggleCart();
+  } catch (err) {
+      // Error handled by api.js
+  }
+}
+
+function updateCartUI() {
+  renderCart();
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
   document.getElementById('cartCount').textContent = count;
-  renderCart();
 }
+
+async function syncCart() {
+  const user = getCurrentUser();
+  if(user) {
+      cart = await window.loadCart();
+      console.log("Cart fetched from server:", JSON.parse(JSON.stringify(cart)));
+  } else {
+      cart = [];
+  }
+  updateCartUI();
+}
+
+
+
+
 
 function toggleCart() {
   document.getElementById('cartDrawer').classList.toggle('open');
@@ -214,7 +275,31 @@ function startTimer() {
     document.getElementById('t-s').textContent = String(s).padStart(2, '0');
   }, 1000);
 }
+// --- INIT & SETUP ---
+async function initApp() {
+  try {
+    // Check user session FIRST
+    const user = await window.checkSession();
+    if (!user) {
+      window.location.replace('auth.html');
+      return; // Stop execution
+    }
 
-renderProducts();
-renderCart();
-startTimer();
+    updateAuthUI(user);
+
+    // Load products from API
+    products = await window.loadProducts();
+    renderProducts();
+
+    // Sync cart from API
+    await syncCart();
+    
+    startTimer();
+  } catch (err) {
+    console.error("Initialization error:", err);
+    document.getElementById('productsGrid').innerHTML = `<p style="text-align:center;width:100%;">Error loading content from backend: ${err.message}</p>`;
+  }
+}
+
+// Ensure the page waits for load
+window.addEventListener('DOMContentLoaded', initApp);
