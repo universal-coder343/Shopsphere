@@ -158,16 +158,7 @@ async function addToCart(id) {
     console.log("Adding to cart API:", id);
     // Await API call
     await window.addToCart(id, 1);
-
-    // Optimistically update frontend state
-    const existing = cart.find(c => c.product_id === id || c.id === id);
-    if (existing) {
-      existing.qty++;
-    } else {
-      cart.push({ ...product, product_id: id, cart_item_id: Date.now(), qty: 1 });
-    }
     
-    console.log("Cart after optimistic update:", JSON.parse(JSON.stringify(cart)));
 
     updateCartUI();
 
@@ -190,7 +181,7 @@ async function addToCart(id) {
 }
 
 async function changeQty(cartItemId, delta, productId) {
-  const item = cart.find(c => c.cart_item_id === cartItemId || c.product_id === productId);
+  const item = cart.find(c => c.product_id === productId) || cart.find(c => c.cart_item_id === cartItemId);
   if (!item) return;
 
   const newQty = item.qty + delta;
