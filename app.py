@@ -264,7 +264,7 @@ def get_cart():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT c.id as cart_item_id, c.qty, p.* 
+        SELECT c.id as cart_item_id,c.product_id,c.qty, p.* 
         FROM cart_items c
         JOIN products p ON c.product_id = p.id
         WHERE c.user_id = ?
