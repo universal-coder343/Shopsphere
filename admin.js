@@ -1,4 +1,5 @@
 let products = [];
+let allOrders = [];
 
 async function initAdmin() {
     try {
@@ -20,6 +21,7 @@ async function initAdmin() {
         document.getElementById('adminName').innerText = `Hello, ${user.name}`;
 
         await loadAdminProducts();
+        await loadAdminOrders();
 
     } catch(err) {
         alert("Authentication failed.");
@@ -142,5 +144,96 @@ async function deleteProduct(id) {
     }
 }
 
+// ── Tab Switching ─────────────────────────────────────────────
+
+function switchTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    document.getElementById(`section-${tab}`).classList.add('active');
+
+    // Show/hide Add Product button
+    const addBtn = document.getElementById('addProductBtn');
+    if (addBtn) addBtn.style.display = tab === 'products' ? 'block' : 'none';
+}
+
+// ── Admin: Orders ─────────────────────────────────────────────
+
+async function loadAdminOrders() {
+    try {
+        allOrders = await window.adminGetAllOrders();
+        renderOrdersTable();
+    } catch(err) {
+        document.getElementById('ordersTableBody').innerHTML =
+            '<tr><td colspan="6" style="text-align:center; color:#f87171;">Failed to load orders.</td></tr>';
+    }
+}
+
+function formatAdminDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function renderOrdersTable() {
+    const tbody = document.getElementById('ordersTableBody');
+    if (allOrders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No orders yet.</td></tr>';
+        return;
+    }
+
+    const statusColors = {
+        'Placed':     '#e8ff3c',
+        'Processing': '#fbbf24',
+        'Shipped':    '#60a5fa',
+        'Delivered':  '#4ade80',
+        'Cancelled':  '#f87171',
+    };
+
+    tbody.innerHTML = allOrders.map(order => `
+        <tr id="orow-${order.id}">
+            <td><strong style="color:var(--accent);">#${order.id}</strong></td>
+            <td>
+                <div style="font-weight:600;">${order.customer_name}</div>
+                <div style="font-size:12px; color:var(--text-muted);">${order.customer_email}</div>
+            </td>
+            <td>${order.item_count} item${order.item_count !== 1 ? 's' : ''}</td>
+            <td style="font-weight:700;">₹${Number(order.total_amount).toLocaleString('en-IN')}</td>
+            <td style="color:var(--text-muted); font-size:13px;">${formatAdminDate(order.created_at)}</td>
+            <td>
+                <select class="status-select" id="status-${order.id}"
+                        onchange="updateOrderStatus(${order.id}, this.value)"
+                        style="color:${statusColors[order.status] || '#f0f0f0'}">
+                    ${['Placed','Processing','Shipped','Delivered','Cancelled'].map(s =>
+                        `<option value="${s}" ${s === order.status ? 'selected' : ''}>${s}</option>`
+                    ).join('')}
+                </select>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+    try {
+        await window.adminUpdateOrderStatus(orderId, newStatus);
+        // Update local data
+        const order = allOrders.find(o => o.id === orderId);
+        if (order) order.status = newStatus;
+        // Update select color
+        const statusColors = {
+            'Placed':'#e8ff3c','Processing':'#fbbf24',
+            'Shipped':'#60a5fa','Delivered':'#4ade80','Cancelled':'#f87171'
+        };
+        const sel = document.getElementById(`status-${orderId}`);
+        if (sel) sel.style.color = statusColors[newStatus] || '#f0f0f0';
+    } catch(err) {
+        alert('Failed to update status: ' + err.message);
+        // Reload to revert
+        await loadAdminOrders();
+    }
+}
+
 // Start
 document.addEventListener('DOMContentLoaded', initAdmin);
+

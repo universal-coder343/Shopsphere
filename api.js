@@ -150,3 +150,26 @@ async function adminDeleteProduct(id) {
 async function adminGetUsers() {
     return callAPI("/admin/users");
 }
+
+
+// ── ORDERS (Protected) ────────────────────────────────────────
+
+async function loadOrders() {
+    return callAPI("/orders");
+}
+
+async function getOrderDetails(id) {
+    return callAPI(`/orders/${id}`);
+}
+
+
+// ── ADMIN ORDERS (Admin Only) ─────────────────────────────────
+
+async function adminGetAllOrders() {
+    return callAPI("/admin/orders");
+}
+
+async function adminUpdateOrderStatus(id, status) {
+    return callAPI(`/admin/orders/${id}/status`, "PUT", { status });
+}
+

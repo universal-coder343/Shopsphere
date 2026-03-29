@@ -205,10 +205,13 @@ async function handleCheckout() {
      cart = [];
      updateCartUI();
      toggleCart();
+     // Show toast with link to view orders
+     showToast('Order placed! <a href="orders.html" style="color:#000; font-weight:700; text-decoration:underline;">View Orders →</a>');
   } catch (err) {
       // Error handled by api.js
   }
 }
+
 
 function updateCartUI() {
   renderCart();
@@ -245,10 +248,11 @@ function toggleWish(id, e) {
 
 function showToast(msg) {
   const toast = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastMsg').innerHTML = msg;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
+  setTimeout(() => toast.classList.remove('show'), 3500);
 }
+
 
 function startTimer() {
   let total = (8 * 3600) + (24 * 60);

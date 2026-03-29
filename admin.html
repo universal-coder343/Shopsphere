@@ -96,6 +96,51 @@
         .modal-body .full-width {
             grid-column: 1 / -1;
         }
+        /* Admin Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .admin-tab {
+            padding: 10px 24px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .admin-tab.active,
+        .admin-tab:hover {
+            background: rgba(232,255,60,0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .status-select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -113,28 +158,59 @@
 
     <div class="admin-container" id="adminContent" style="display: none;">
         <div class="admin-header">
-            <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 40px; margin: 0;">Manage Products</h1>
-            <button class="btn-primary" onclick="openProductModal()">+ Add Product</button>
+            <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 40px; margin: 0;">Admin Panel</h1>
+            <button class="btn-primary" id="addProductBtn" onclick="openProductModal()">+ Add Product</button>
         </div>
 
-        <div class="admin-table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Badge</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="productTableBody">
-                    <tr>
-                        <td colspan="6" style="text-align: center;">Loading products...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="admin-tabs">
+            <button class="admin-tab active" id="tab-products" onclick="switchTab('products')">🛍️ Products</button>
+            <button class="admin-tab" id="tab-orders" onclick="switchTab('orders')">📦 Orders</button>
+        </div>
+
+        <!-- Products Section -->
+        <div class="admin-section active" id="section-products">
+            <div class="admin-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Badge</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading products...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div class="admin-section" id="section-orders">
+            <div class="admin-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading orders...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

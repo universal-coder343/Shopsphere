@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 from functools import wraps
 import sqlite3
@@ -19,7 +19,7 @@ app.config.update(
 )
 
 DB_FILE = 'shopsphere.db'
-MAX_CART_LIMIT = 20
+MAX_CART_LIMIT = 200
 
 def get_db():
     conn = sqlite3.connect(DB_FILE)
@@ -396,5 +396,118 @@ def checkout():
     
     return jsonify({"message": "Order placed successfully!", "order_id": order_id}), 201
 
+# ─────────────────────────────────────────────
+#  ORDER ROUTES (Requires Login)
+# ─────────────────────────────────────────────
+
+VALID_STATUSES = ['Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+
+@app.route("/api/orders", methods=["GET"])
+@login_required
+def get_orders():
+    user_id = session.get('user_id')
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT o.id, o.total_amount, o.status, o.created_at,
+               COUNT(oi.id) as item_count
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        WHERE o.user_id = ?
+        GROUP BY o.id
+        ORDER BY o.created_at DESC
+    ''', (user_id,))
+    orders = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(orders), 200
+
+@app.route("/api/orders/<int:order_id>", methods=["GET"])
+@login_required
+def get_order_detail(order_id):
+    user_id = session.get('user_id')
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Verify order belongs to this user
+    cursor.execute("SELECT * FROM orders WHERE id=? AND user_id=?", (order_id, user_id))
+    order = cursor.fetchone()
+    if not order:
+        conn.close()
+        return jsonify({"error": "Order not found"}), 404
+
+    # Fetch order items with product details
+    cursor.execute('''
+        SELECT oi.qty, oi.price_at_purchase,
+               p.name, p.emoji, p.cat
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+    ''', (order_id,))
+    items = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    result = dict(order)
+    result['items'] = items
+    return jsonify(result), 200
+
+# ─────────────────────────────────────────────
+#  ADMIN ORDER ROUTES
+# ─────────────────────────────────────────────
+
+@app.route("/api/admin/orders", methods=["GET"])
+@admin_required
+def admin_get_orders():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT o.id, o.total_amount, o.status, o.created_at,
+               u.name as customer_name, u.email as customer_email,
+               COUNT(oi.id) as item_count
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        GROUP BY o.id
+        ORDER BY o.created_at DESC
+    ''')
+    orders = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(orders), 200
+
+@app.route("/api/admin/orders/<int:order_id>/status", methods=["PUT"])
+@admin_required
+def admin_update_order_status(order_id):
+    data = request.json
+    new_status = data.get('status')
+
+    if new_status not in VALID_STATUSES:
+        return jsonify({"error": f"Invalid status. Must be one of: {', '.join(VALID_STATUSES)}"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM orders WHERE id=?", (order_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Order not found"}), 404
+
+    cursor.execute("UPDATE orders SET status=? WHERE id=?", (new_status, order_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": f"Order #{order_id} status updated to '{new_status}'"}), 200
+
+# ─────────────────────────────────────────────
+#  SERVE FRONTEND STATIC FILES
+# ─────────────────────────────────────────────
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+@app.route('/')
+def index():
+    return send_from_directory(BASE_DIR, 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(BASE_DIR, filename)
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
