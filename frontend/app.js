@@ -79,7 +79,7 @@ function renderProducts() {
             ${formatPrice(p.price)}
             ${p.oldPrice ? `<span class="old-price">${formatPrice(p.oldPrice)}</span>` : ''}
           </div>
-          <button class="add-cart" id="btn-${p.id}" onclick="addToCart(${p.id})" title="Add to cart">+</button>
+          <button class="add-cart" id="btn-${p.id}" onclick="handleAddToCart(${p.id})" title="Add to cart">+</button>
         </div>
       </div>
     </div>
@@ -145,7 +145,7 @@ async function handleLogout() {
     await window.logoutUser(); // This triggers window reload via api.js
 }
 
-async function addToCart(id) {
+async function handleAddToCart(id) {
   const user = getCurrentUser();
   if (!user) {
       window.location.replace('auth.html');

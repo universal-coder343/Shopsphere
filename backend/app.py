@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:3000", "http://localhost", "http://127.0.0.1"])
 
 # Provide a secret key for session/cookie encryption
-app.secret_key = 'super_secret_shopsphere_key_change_in_production'
+app.secret_key = 'c54522b8052012ee4a3042db66d27ad738d0f90ae3fa00a2a2a44b7ce0e679f7'
 
 # Cookie configs to allow cross-origin requests (development)
 app.config.update(
@@ -19,7 +19,7 @@ app.config.update(
 )
 
 DB_FILE = 'shopsphere.db'
-MAX_CART_LIMIT = 200
+MAX_CART_LIMIT = 10000
 
 def get_db():
     conn = sqlite3.connect(DB_FILE)

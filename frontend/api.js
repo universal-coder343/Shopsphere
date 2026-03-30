@@ -173,3 +173,26 @@ async function adminUpdateOrderStatus(id, status) {
     return callAPI(`/admin/orders/${id}/status`, "PUT", { status });
 }
 
+// Expose helper functions globally for inline scripts and page modules
+window.callAPI = callAPI;
+window.registerUser = registerUser;
+window.loginUser = loginUser;
+window.checkSession = checkSession;
+window.getCurrentUser = getCurrentUser;
+window.logoutUser = logoutUser;
+window.loadProducts = loadProducts;
+window.getProduct = getProduct;
+window.addToCart = addToCart;
+window.loadCart = loadCart;
+window.updateCartItem = updateCartItem;
+window.removeFromCart = removeFromCart;
+window.placeOrder = placeOrder;
+window.adminCreateProduct = adminCreateProduct;
+window.adminUpdateProduct = adminUpdateProduct;
+window.adminDeleteProduct = adminDeleteProduct;
+window.adminGetUsers = adminGetUsers;
+window.loadOrders = loadOrders;
+window.getOrderDetails = getOrderDetails;
+window.adminGetAllOrders = adminGetAllOrders;
+window.adminUpdateOrderStatus = adminUpdateOrderStatus;
+
